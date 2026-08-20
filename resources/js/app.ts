@@ -16,8 +16,17 @@ createInertiaApp({
             import.meta.glob<DefineComponent>('./pages/**/*.vue'),
         ),
     setup({ el, App, props, plugin }) {
-        createApp({ render: () => h(App, props) })
-            .use(plugin)
-            .mount(el);
+        const vueApp = createApp({ render: () => h(App, props) });
+
+        vueApp.use(plugin);
+
+        // When `el` is present we are running in the browser, so mount the
+        // app to the DOM. During Inertia SSR (`el` is undefined) we simply
+        // return the app instance so it can be rendered to a string.
+        if (el) {
+            vueApp.mount(el);
+        }
+
+        return vueApp;
     },
 });

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Command;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use function Illuminate\Log\log;
 
 class Commands extends Controller
 {
@@ -75,6 +76,7 @@ class Commands extends Controller
             'image' => $image,
         ]);
 
+        log('Command created: ' . $code);
         return response()->json([
             'success' => true
         ]);
