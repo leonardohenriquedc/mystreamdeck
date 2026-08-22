@@ -19,6 +19,15 @@ const errors = ref<Record<string, string>>({});
 const success = ref(false);
 const serverError = ref<string | null>(null);
 
+function readCsrfToken(): string {
+    // Laravel stores the CSRF token in the (URL-encoded) XSRF-TOKEN cookie.
+    const match = document.cookie
+        .split('; ')
+        .find((entry) => entry.startsWith('XSRF-TOKEN='));
+
+    return match ? decodeURIComponent(match.slice('XSRF-TOKEN='.length)) : '';
+}
+
 function onFileChange(event: Event) {
     const input = event.target as HTMLInputElement;
     const selected = input.files?.[0] ?? null;
@@ -74,6 +83,12 @@ async function submit() {
 
         const response = await fetch('/commands', {
             method: 'POST',
+            headers: {
+                'X-XSRF-TOKEN': readCsrfToken(),
+                // Ask for a JSON response so validation failures come back as
+                // 422 with per-field errors, instead of a redirect to 302.
+                Accept: 'application/json',
+            },
             body: payload,
         });
 
@@ -215,6 +230,7 @@ async function submit() {
                 @submit.prevent="submit"
                 class="overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900/60 shadow-xl shadow-black/30"
             >
+                @csrf
                 <div class="space-y-6 p-7">
                     <!-- Image upload -->
                     <div>
